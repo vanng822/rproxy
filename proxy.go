@@ -14,13 +14,11 @@ func main() {
 		host    string
 		port    int
 		proxy   string
-		force   bool
 	)
 
 	flag.StringVar(&host, "h", "127.0.0.1", "Host to listen on")
 	flag.IntVar(&port, "p", 80, "Port number to listen on")
 	flag.StringVar(&proxy, "r", "", "Proxy host")
-	flag.BoolVar(&force, "f", false, "Force and remove pid file")
 	flag.Parse()
 
 	proxyUrl, err := url.Parse(proxy)
