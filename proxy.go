@@ -3,8 +3,8 @@ package rproxy
 import (
 	"fmt"
 	"net/http"
-	"net/http/httputil"
-	"net/url"
+	//"net/http/httputil"
+	//"net/url"
 )
 
 type Server struct {
@@ -13,30 +13,41 @@ type Server struct {
 	backend *Backend
 }
 
+func (s *Server) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	s.backend.ServeHTTP(rw, req)
+}
+
 type Proxy struct {
 	servers map[string]*Server
 }
 
 func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	for name, server := range p.servers {
-		if name == req.Host {
-			server.backend.ServeHTTP(rw, req)
-			return
-		}
+	if server, found := p.servers[req.Host]; found {
+		server.ServeHTTP(rw, req)
+		return
 	}
+	http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
 func (p *Proxy) Register(serverName, targetUrl string) error {
-	target, err := url.Parse(targetUrl)
+	var s *Server
+	if _, ok := p.servers[serverName]; ok {
+		s = p.servers[serverName]
+	} else {
+		s = &Server{
+			name: serverName,
+			backend: &Backend{},
+		}
+	}
+	
+	err := s.backend.addNode(targetUrl)
+	
 	if err != nil {
 		return err
 	}
-	b := &Backend{}
-	b.nodes[targetUrl] = httputil.NewSingleHostReverseProxy(target)
-	p.servers[serverName] = &Server{
-		name:    serverName,
-		backend: b,
-	}
+	
+	p.servers[serverName] = s
+	
 	return nil
 }
 
@@ -47,11 +58,14 @@ func (p *Proxy) Unregister(serverName, targetUrl string) error {
 		return fmt.Errorf("No server by name %s", serverName)
 	}
 
-	if _, ok := s.backend.nodes[targetUrl]; !ok {
-		return fmt.Errorf("No target %s exists for servername %s", targetUrl, serverName)
+	err := s.backend.deleteNode(targetUrl)
+	if err != nil {
+		return err
 	}
-
-	delete(s.backend.nodes, targetUrl)
-
+	// no nodes left then remove server
+	if len(s.backend.nodes) == 0 {
+		delete(p.servers, serverName)
+	}
+	
 	return nil
 }
