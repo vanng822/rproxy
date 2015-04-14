@@ -20,13 +20,12 @@ func singleJoiningSlash(a, b string) string {
 	return a + b
 }
 
-func CreateProxy(target *url.URL) *httputil.ReverseProxy {
+func CreateReverseProxy(target *url.URL) *httputil.ReverseProxy {
 	targetQuery := target.RawQuery
 	director := func(req *http.Request) {
 		req.URL.Scheme = target.Scheme
 		req.URL.Host = target.Host
 		req.URL.Path = singleJoiningSlash(target.Path, req.URL.Path)
-		req.Host = target.Host
 		if targetQuery == "" || req.URL.RawQuery == "" {
 			req.URL.RawQuery = targetQuery + req.URL.RawQuery
 		} else {
@@ -84,7 +83,7 @@ func (b *Backend) addNode(targetUrl string) error {
 		n = &BackendNode{}
 	}
 	n.targetUrl = targetUrl
-	n.server = CreateProxy(target)
+	n.server = CreateReverseProxy(target)
 	b.nodes = append(b.nodes, n)
 	return nil
 }
