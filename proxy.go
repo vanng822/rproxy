@@ -5,6 +5,7 @@ import (
 	"net/http"
 	//"net/http/httputil"
 	//"net/url"
+	"log"
 )
 
 type Server struct {
@@ -28,6 +29,7 @@ func NewProxy() *Proxy {
 }
 
 func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	log.Printf("Host: %s", req.Host)
 	if server, found := p.servers[req.Host]; found {
 		server.ServeHTTP(rw, req)
 		return
