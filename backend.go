@@ -17,6 +17,12 @@ type Backend struct {
 	nodes []*BackendNode
 }
 
+func NewBackend() *Backend {
+	b := &Backend{}
+	b.nodes = make([]*BackendNode, 0)
+	return b
+}
+
 func (b *Backend) deleteNode(targetUrl string) error {
 	found := -1
 	for i, n := range b.nodes {

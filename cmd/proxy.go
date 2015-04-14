@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"github.com/vanng822/rproxy"
 )
 
 func main() {
@@ -30,7 +31,9 @@ func main() {
 	if targetUrl.Host == "" {
 		log.Fatalf("You need to provide a valid proxy url. Provided '%s'", proxy)
 	}
-
+	
+	rproxy.Server{}
+	
 	singleHostProxy := httputil.NewSingleHostReverseProxy(targetUrl)
 	
 	http.Handle("/", singleHostProxy)

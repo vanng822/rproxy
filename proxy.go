@@ -36,7 +36,7 @@ func (p *Proxy) Register(serverName, targetUrl string) error {
 	} else {
 		s = &Server{
 			name: serverName,
-			backend: &Backend{},
+			backend: NewBackend(),
 		}
 	}
 	
