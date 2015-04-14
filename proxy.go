@@ -21,6 +21,12 @@ type Proxy struct {
 	servers map[string]*Server
 }
 
+func NewProxy() *Proxy {
+	p := &Proxy{}
+	p.servers = make(map[string]*Server)
+	return p
+}
+
 func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if server, found := p.servers[req.Host]; found {
 		server.ServeHTTP(rw, req)
