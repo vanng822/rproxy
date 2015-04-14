@@ -38,23 +38,23 @@ func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 }
 
 func (p *Proxy) Register(serverName, targetUrl string) error {
-	var s *Server
-	if _, ok := p.servers[serverName]; ok {
-		s = p.servers[serverName]
+	var server *Server
+	if s, ok := p.servers[serverName]; ok {
+		server = s
 	} else {
-		s = &Server{
+		server = &Server{
 			name: serverName,
 			backend: NewBackend(),
 		}
 	}
 	
-	err := s.backend.addNode(targetUrl)
+	err := server.backend.addNode(targetUrl)
 	
 	if err != nil {
 		return err
 	}
 	
-	p.servers[serverName] = s
+	p.servers[serverName] = server
 	
 	return nil
 }
