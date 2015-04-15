@@ -113,5 +113,8 @@ func (b *Backend) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if node != nil {
 		// TODO next node if this node fails to serve
 		node.server.ServeHTTP(rw, req)
+	} else {
+		http.Error(rw, http.StatusText(http.StatusServiceUnavailable), http.StatusServiceUnavailable)
 	}
+	
 }
