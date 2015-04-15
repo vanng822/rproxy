@@ -60,7 +60,7 @@ func (b *Backend) deleteNode(targetUrl string) error {
 		}
 	}
 
-	if found > 0 {
+	if found > -1 {
 		if found == len(b.nodes)-1 {
 			b.nodes = append(b.nodes[:found])
 		} else {
