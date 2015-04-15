@@ -37,25 +37,36 @@ func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
+func (p *Proxy) ParseServerConfig(req *http.Request) (err error, serverName string, targetUrl string) {
+	req.ParseForm()
+	serverName = req.Form.Get("serverName")
+	targetUrl = req.Form.Get("targetUrl")
+	if serverName == "" || targetUrl == "" {
+		err = fmt.Errorf("You have to specify 'serverName' and 'targetUrl'")
+		return
+	}
+	return
+}
+
 func (p *Proxy) Register(serverName, targetUrl string) error {
 	var server *Server
 	if s, ok := p.servers[serverName]; ok {
 		server = s
 	} else {
 		server = &Server{
-			name: serverName,
+			name:    serverName,
 			backend: NewBackend(),
 		}
 	}
-	
+
 	err := server.backend.addNode(targetUrl)
-	
+
 	if err != nil {
 		return err
 	}
-	
+
 	p.servers[serverName] = server
-	
+
 	return nil
 }
 
@@ -74,6 +85,6 @@ func (p *Proxy) Unregister(serverName, targetUrl string) error {
 	if len(s.backend.nodes) == 0 {
 		delete(p.servers, serverName)
 	}
-	
+
 	return nil
 }
