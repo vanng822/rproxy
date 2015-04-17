@@ -44,7 +44,7 @@ func (p *Proxy) ParseServerConfig(req *http.Request) (error, *ServerConfig) {
 	if serverName == "" || targetUrl == "" {
 		return fmt.Errorf("You have to specify 'serverName' and 'targetUrl'"), nil
 	}
-	return &ServerConfig{
+	return nil, &ServerConfig{
 		ServerName: serverName,
 		TargetUrl:  targetUrl,
 	}
