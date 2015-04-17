@@ -37,15 +37,17 @@ func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
-func (p *Proxy) ParseServerConfig(req *http.Request) (err error, serverName string, targetUrl string) {
+func (p *Proxy) ParseServerConfig(req *http.Request) (error, *ServerConfig) {
 	req.ParseForm()
-	serverName = req.Form.Get("serverName")
-	targetUrl = req.Form.Get("targetUrl")
+	serverName := req.Form.Get("serverName")
+	targetUrl := req.Form.Get("targetUrl")
 	if serverName == "" || targetUrl == "" {
-		err = fmt.Errorf("You have to specify 'serverName' and 'targetUrl'")
-		return
+		return fmt.Errorf("You have to specify 'serverName' and 'targetUrl'"), nil
 	}
-	return
+	return &ServerConfig{
+		ServerName: serverName,
+		TargetUrl:  targetUrl,
+	}
 }
 
 func (p *Proxy) Register(serverName, targetUrl string) error {
