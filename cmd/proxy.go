@@ -11,14 +11,18 @@ import (
 
 func main() {
 	var (
-		host  string
-		port  int
+		host    string
+		port    int
+		apiHost string
+		apiPort int
 	)
 
 	flag.StringVar(&host, "h", "127.0.0.1", "Host to listen on")
 	flag.IntVar(&port, "p", 80, "Port number to listen on")
+	flag.StringVar(&apiHost, "ah", "127.0.0.1", "Host for server admin api")
+	flag.IntVar(&apiPort, "ap", 8080, "Port for server admin api")
 	flag.Parse()
-
+	
 	proxyServer := rproxy.NewProxy()
 
 	seefor := r2router.NewSeeforRouter()
@@ -41,7 +45,7 @@ func main() {
 			}
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("OK"))
-			
+
 		})
 
 		r.Delete("/remove", func(w http.ResponseWriter, req *http.Request, _ r2router.Params) {
@@ -61,11 +65,11 @@ func main() {
 			}
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("OK"))
-			
+
 		})
 	})
 
 	http.Handle("/", proxyServer)
-	go http.ListenAndServe(fmt.Sprintf("%s:%d", host, port + 1), seefor)
+	go http.ListenAndServe(fmt.Sprintf("%s:%d", apiHost, apiPort), seefor)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), nil))
 }
