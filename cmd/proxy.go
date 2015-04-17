@@ -30,16 +30,16 @@ func main() {
 	seefor.Group("/_server", func(r *r2router.GroupRouter) {
 		r.Post("/add", func(w http.ResponseWriter, req *http.Request, _ r2router.Params) {
 			log.Println("_server/add")
-			err, serverName, targetUrl := proxyServer.ParseServerConfig(req)
+			err, severConfig := proxyServer.ParseServerConfig(req)
 			if err != nil {
 				http.Error(w, fmt.Sprintf("Invalid server config, error: %s", err.Error()), http.StatusBadRequest)
 				return
 			}
-			err = proxyServer.Register(serverName, targetUrl)
+			err = proxyServer.Register(severConfig.ServerName, severConfig.TargetUrl)
 			if err != nil {
 				http.Error(w,
 					fmt.Sprintf("It was problem when adding new server, serverName: '%s', targetUrl: '%s', error: '%s'",
-						serverName, targetUrl, err.Error()),
+						severConfig.ServerName, severConfig.TargetUrl, err.Error()),
 					http.StatusInternalServerError)
 				return
 			}
@@ -50,16 +50,16 @@ func main() {
 
 		r.Delete("/remove", func(w http.ResponseWriter, req *http.Request, _ r2router.Params) {
 			log.Println("_server/remove")
-			err, serverName, targetUrl := proxyServer.ParseServerConfig(req)
+			err, severConfig := proxyServer.ParseServerConfig(req)
 			if err != nil {
 				http.Error(w, fmt.Sprintf("Invalid server config, error: %s", err.Error()), http.StatusBadRequest)
 				return
 			}
-			err = proxyServer.Unregister(serverName, targetUrl)
+			err = proxyServer.Unregister(severConfig.ServerName, severConfig.TargetUrl)
 			if err != nil {
 				http.Error(w,
 					fmt.Sprintf("It was problem when removing server, serverName: '%s', targetUrl: '%s', error: '%s'",
-						serverName, targetUrl, err.Error()),
+						severConfig.ServerName, severConfig.TargetUrl, err.Error()),
 					http.StatusInternalServerError)
 				return
 			}
