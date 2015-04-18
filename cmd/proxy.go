@@ -3,7 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/vanng822/accesslog"
 	"github.com/vanng822/r2router"
+	"github.com/vanng822/recovery"
 	"github.com/vanng822/rproxy"
 	"log"
 	"net/http"
@@ -22,14 +24,18 @@ func main() {
 	flag.StringVar(&apiHost, "ah", "127.0.0.1", "Host for server admin api")
 	flag.IntVar(&apiPort, "ap", 8080, "Port for server admin api")
 	flag.Parse()
-	
+
 	proxyServer := rproxy.NewProxy()
 
+	logger := accesslog.New()
+	rec := recovery.NewRecovery()
+
 	seefor := r2router.NewSeeforRouter()
+	seefor.Before(rec.Handler)
+	seefor.Before(logger.Handler)
 
 	seefor.Group("/_server", func(r *r2router.GroupRouter) {
 		r.Post("/add", func(w http.ResponseWriter, req *http.Request, _ r2router.Params) {
-			log.Println("_server/add")
 			err, severConfig := proxyServer.ParseServerConfig(req)
 			if err != nil {
 				http.Error(w, fmt.Sprintf("Invalid server config, error: %s", err.Error()), http.StatusBadRequest)
@@ -49,7 +55,6 @@ func main() {
 		})
 
 		r.Delete("/remove", func(w http.ResponseWriter, req *http.Request, _ r2router.Params) {
-			log.Println("_server/remove")
 			err, severConfig := proxyServer.ParseServerConfig(req)
 			if err != nil {
 				http.Error(w, fmt.Sprintf("Invalid server config, error: %s", err.Error()), http.StatusBadRequest)
@@ -69,7 +74,7 @@ func main() {
 		})
 	})
 
-	http.Handle("/", proxyServer)
+	http.Handle("/", rec.Handler(logger.Handler(proxyServer)))
 	go http.ListenAndServe(fmt.Sprintf("%s:%d", apiHost, apiPort), seefor)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), nil))
 }
