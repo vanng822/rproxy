@@ -43,6 +43,7 @@ type BackendNode struct {
 type Backend struct {
 	// map on targetUrl
 	nodes []*BackendNode
+	next  int
 }
 
 func NewBackend() *Backend {
@@ -100,12 +101,16 @@ func (b *Backend) getNode(targetUrl string) *BackendNode {
 // nextNode returns a node candidate for serving the request
 func (b *Backend) nextNode() *BackendNode {
 	// Pickup one backend proxy
-	// TODO round rubin
-	for _, p := range b.nodes {
-		return p
+	if len(b.nodes) == 0 {
+		return nil
 	}
-
-	return nil
+	p := b.nodes[b.next]
+	b.next++
+	if b.next >= len(b.nodes) {
+		b.next = 0
+	}
+	
+	return p
 }
 
 func (b *Backend) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
@@ -116,5 +121,5 @@ func (b *Backend) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	} else {
 		http.Error(rw, http.StatusText(http.StatusServiceUnavailable), http.StatusServiceUnavailable)
 	}
-	
+
 }
