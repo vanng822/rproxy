@@ -84,7 +84,7 @@ func main() {
 			if err != nil {
 				http.Error(w,
 					fmt.Sprintf("It was problem when removing server, serverName: '%s', error: '%s'",
-						severConfig.ServerName, err.Error()),
+						serverName, err.Error()),
 					http.StatusInternalServerError)
 				return
 			}
