@@ -34,7 +34,7 @@ func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		server.ServeHTTP(rw, req)
 		return
 	}
-	http.Error(rw, http.StatusText(http.StatusBadGateway), http.StatusBadGateway)
+	http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
 func (p *Proxy) ParseServerConfig(req *http.Request) (error, *ServerConfig) {
