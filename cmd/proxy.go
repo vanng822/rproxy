@@ -35,7 +35,7 @@ func main() {
 	seefor.Before(logger.Handler)
 
 	seefor.Group("/_server", func(r *r2router.GroupRouter) {
-		r.Post("/add", func(w http.ResponseWriter, req *http.Request, _ r2router.Params) {
+		r.Post("/backend", func(w http.ResponseWriter, req *http.Request, _ r2router.Params) {
 			err, severConfig := proxyServer.ParseServerConfig(req)
 			if err != nil {
 				http.Error(w, fmt.Sprintf("Invalid server config, error: %s", err.Error()), http.StatusBadRequest)
@@ -53,8 +53,8 @@ func main() {
 			w.Write([]byte("OK"))
 
 		})
-
-		r.Delete("/remove", func(w http.ResponseWriter, req *http.Request, _ r2router.Params) {
+		// delete backend node
+		r.Delete("/backend", func(w http.ResponseWriter, req *http.Request, _ r2router.Params) {
 			err, severConfig := proxyServer.ParseServerConfig(req)
 			if err != nil {
 				http.Error(w, fmt.Sprintf("Invalid server config, error: %s", err.Error()), http.StatusBadRequest)
@@ -71,6 +71,25 @@ func main() {
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("OK"))
 
+		})
+		// delete server
+		r.Delete("/", func(w http.ResponseWriter, req *http.Request, _ r2router.Params) {
+			req.ParseForm()
+			serverName := req.Form.Get("serverName")
+			if serverName == "" {
+				http.Error(w, fmt.Sprintf("serverName is required"), http.StatusBadRequest)
+				return
+			}
+			err := proxyServer.RemoveServer(serverName)
+			if err != nil {
+				http.Error(w,
+					fmt.Sprintf("It was problem when removing server, serverName: '%s', error: '%s'",
+						severConfig.ServerName, err.Error()),
+					http.StatusInternalServerError)
+				return
+			}
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("OK"))
 		})
 	})
 

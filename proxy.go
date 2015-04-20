@@ -90,3 +90,12 @@ func (p *Proxy) Unregister(serverName, targetUrl string) error {
 
 	return nil
 }
+
+func (p *Proxy) RemoveServer(serverName string) error {
+	_, ok := p.servers[serverName]
+	if !ok {
+		return fmt.Errorf("No server by name %s", serverName)
+	}
+	delete(p.servers, serverName)
+	return nil
+}
