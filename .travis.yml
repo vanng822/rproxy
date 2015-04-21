@@ -10,7 +10,11 @@ env:
 
 
 install:
-  - go get 
+  - go get github.com/vanng822/accesslog
+  - go get github.com/vanng822/r2router
+  - go get github.com/vanng822/recovery
+  - go get github.com/unrolled/render
+  - go get github.com/stretchr/testify/assert
 
 script:
   - go test -v
