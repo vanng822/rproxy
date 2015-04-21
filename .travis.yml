@@ -10,7 +10,7 @@ env:
 
 
 install:
-  - go get github.com/stretchr/testify/assert
+  - go get 
 
 script:
   - go test -v
