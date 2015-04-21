@@ -5,7 +5,8 @@ import (
 	"net/http"
 	//"net/http/httputil"
 	//"net/url"
-	"log"
+	"github.com/vanng822/accesslog"
+	"github.com/vanng822/recovery"
 )
 
 type Server struct {
@@ -20,12 +21,35 @@ func (s *Server) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 type Proxy struct {
 	servers map[string]*Server
+	conf    *Conf
 }
 
-func NewProxy() *Proxy {
+func NewProxy(conf *Conf) *Proxy {
 	p := &Proxy{}
 	p.servers = make(map[string]*Server)
+	if conf == nil {
+		conf = DefaultConf()
+	}
+	if conf.Servers != nil {
+		for _, s := range conf.Servers {
+			p.Register(s.ServerName, s.TargetUrl)
+		}
+	}
 	return p
+}
+
+func (p *Proxy) Start() {
+	logger := accesslog.New()
+	rec := recovery.NewRecovery()
+	
+	http.Handle("/", rec.Handler(logger.Handler(p)))
+	
+	if p.conf.ApiEnable {
+		api := p.AdminAPI()
+		go http.ListenAndServe(fmt.Sprintf("%s:%d", p.conf.ApiHost, p.conf.ApiPort), api)
+	}
+	
+	http.ListenAndServe(fmt.Sprintf("%s:%d", p.conf.Host, p.conf.Port), nil)
 }
 
 func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {

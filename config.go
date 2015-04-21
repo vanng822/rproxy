@@ -1,10 +1,10 @@
 package rproxy
 
 import (
-	"os"
-	"log"
 	"encoding/json"
 	"io"
+	"log"
+	"os"
 )
 
 type ServerConfig struct {
@@ -17,8 +17,20 @@ type Conf struct {
 	Port      int
 	ApiEnable bool
 	ApiHost   string
-	ApiPort   string
+	ApiPort   int
 	Servers   []*ServerConfig
+}
+
+func DefaultConf() *Conf {
+	conf := &Conf{
+		Host:      "127.0.0.1",
+		Port:      5555,
+		ApiEnable: true,
+		ApiHost:   "127.0.0.1",
+		ApiPort:   5556,
+		Servers:   nil,
+	}
+	return conf
 }
 
 func LoadConfig(filename string) *Conf {
@@ -26,7 +38,7 @@ func LoadConfig(filename string) *Conf {
 	if err != nil {
 		log.Panicf("Could not open configuration file, error: %s", err.Error())
 	}
-	return ParseConfig(file)	
+	return ParseConfig(file)
 }
 
 func ParseConfig(config io.Reader) *Conf {
@@ -36,5 +48,5 @@ func ParseConfig(config io.Reader) *Conf {
 	if err != nil {
 		log.Panicf("Could not parse configuration, error: %s", err.Error())
 	}
-	return conf	
+	return conf
 }
