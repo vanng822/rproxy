@@ -2,12 +2,7 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"github.com/vanng822/rproxy"
-	"github.com/vanng822/accesslog"
-	"github.com/vanng822/recovery"
-	"log"
-	"net/http"
 )
 
 func main() {
@@ -16,22 +11,39 @@ func main() {
 		port    int
 		apiHost string
 		apiPort int
+		config  string
+		conf    *rproxy.Conf
 	)
 
-	flag.StringVar(&host, "h", "127.0.0.1", "Host to listen on")
-	flag.IntVar(&port, "p", 80, "Port number to listen on")
-	flag.StringVar(&apiHost, "ah", "127.0.0.1", "Host for server admin api")
-	flag.IntVar(&apiPort, "ap", 8080, "Port for server admin api")
+	flag.StringVar(&host, "h", "", "Host to listen on")
+	flag.IntVar(&port, "p", -1, "Port number to listen on")
+	flag.StringVar(&apiHost, "ah", "", "Host for server admin api")
+	flag.IntVar(&apiPort, "ap", -1, "Port for server admin api")
+	flag.StringVar(&config, "c", "", "Configuration file")
 	flag.Parse()
-
-	logger := accesslog.New()
-	rec := recovery.NewRecovery()
 	
-	proxyServer := rproxy.NewProxy()
+	if config != "" {
+		conf = rproxy.LoadConfig(config)
+	} else {
+		conf = rproxy.DefaultConf()
+	}
 	
-	api := proxyServer.AdminAPI()
+	if host != "" {
+		conf.Host = host
+	}
 	
-	http.Handle("/", rec.Handler(logger.Handler(proxyServer)))
-	go http.ListenAndServe(fmt.Sprintf("%s:%d", apiHost, apiPort), api)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), nil))
+	if port != -1 {
+		conf.Port = port
+	}
+	
+	if apiHost != "" {
+		conf.ApiHost = apiHost
+	}
+	
+	if apiPort != -1 {
+		conf.ApiPort = apiPort
+	}
+	
+	proxyServer := rproxy.NewProxy(conf)
+	proxyServer.Start()
 }
