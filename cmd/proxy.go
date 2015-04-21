@@ -3,10 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/vanng822/accesslog"
-	"github.com/vanng822/r2router"
-	"github.com/vanng822/recovery"
 	"github.com/vanng822/rproxy"
+	"github.com/vanng822/accesslog"
+	"github.com/vanng822/recovery"
 	"log"
 	"net/http"
 )
@@ -25,75 +24,14 @@ func main() {
 	flag.IntVar(&apiPort, "ap", 8080, "Port for server admin api")
 	flag.Parse()
 
-	proxyServer := rproxy.NewProxy()
-
 	logger := accesslog.New()
 	rec := recovery.NewRecovery()
-
-	seefor := r2router.NewSeeforRouter()
-	seefor.Before(rec.Handler)
-	seefor.Before(logger.Handler)
-
-	seefor.Group("/_server", func(r *r2router.GroupRouter) {
-		r.Post("/backend", func(w http.ResponseWriter, req *http.Request, _ r2router.Params) {
-			err, severConfig := proxyServer.ParseServerConfig(req)
-			if err != nil {
-				http.Error(w, fmt.Sprintf("Invalid server config, error: %s", err.Error()), http.StatusBadRequest)
-				return
-			}
-			err = proxyServer.Register(severConfig.ServerName, severConfig.TargetUrl)
-			if err != nil {
-				http.Error(w,
-					fmt.Sprintf("It was problem when adding new server, serverName: '%s', targetUrl: '%s', error: '%s'",
-						severConfig.ServerName, severConfig.TargetUrl, err.Error()),
-					http.StatusInternalServerError)
-				return
-			}
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("OK"))
-
-		})
-		// delete backend node
-		r.Delete("/backend", func(w http.ResponseWriter, req *http.Request, _ r2router.Params) {
-			err, severConfig := proxyServer.ParseServerConfig(req)
-			if err != nil {
-				http.Error(w, fmt.Sprintf("Invalid server config, error: %s", err.Error()), http.StatusBadRequest)
-				return
-			}
-			err = proxyServer.Unregister(severConfig.ServerName, severConfig.TargetUrl)
-			if err != nil {
-				http.Error(w,
-					fmt.Sprintf("It was problem when removing server, serverName: '%s', targetUrl: '%s', error: '%s'",
-						severConfig.ServerName, severConfig.TargetUrl, err.Error()),
-					http.StatusInternalServerError)
-				return
-			}
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("OK"))
-
-		})
-		// delete server
-		r.Delete("/", func(w http.ResponseWriter, req *http.Request, _ r2router.Params) {
-			req.ParseForm()
-			serverName := req.Form.Get("serverName")
-			if serverName == "" {
-				http.Error(w, fmt.Sprintf("serverName is required"), http.StatusBadRequest)
-				return
-			}
-			err := proxyServer.RemoveServer(serverName)
-			if err != nil {
-				http.Error(w,
-					fmt.Sprintf("It was problem when removing server, serverName: '%s', error: '%s'",
-						serverName, err.Error()),
-					http.StatusInternalServerError)
-				return
-			}
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("OK"))
-		})
-	})
-
+	
+	proxyServer := rproxy.NewProxy()
+	
+	api := proxyServer.AdminAPI()
+	
 	http.Handle("/", rec.Handler(logger.Handler(proxyServer)))
-	go http.ListenAndServe(fmt.Sprintf("%s:%d", apiHost, apiPort), seefor)
+	go http.ListenAndServe(fmt.Sprintf("%s:%d", apiHost, apiPort), api)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), nil))
 }
