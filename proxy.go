@@ -30,6 +30,9 @@ func NewProxy(conf *Conf) *Proxy {
 	if conf == nil {
 		conf = DefaultConf()
 	}
+	
+	p.conf = conf
+	
 	if conf.Servers != nil {
 		for _, s := range conf.Servers {
 			p.Register(s.ServerName, s.TargetUrl)
