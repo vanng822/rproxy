@@ -41,7 +41,6 @@ type BackendNode struct {
 }
 
 type Backend struct {
-	// map on targetUrl
 	nodes []*BackendNode
 	next  int
 }
