@@ -80,9 +80,10 @@ func (b *Backend) addNode(targetUrl string) error {
 	}
 	// find if there is a node for this targetUrl
 	n := b.getNode(targetUrl)
-	if n == nil {
-		n = &BackendNode{}
+	if n != nil {
+		return nil
 	}
+	n = &BackendNode{}
 	n.targetUrl = targetUrl
 	n.server = CreateReverseProxy(target)
 	b.nodes = append(b.nodes, n)
@@ -109,7 +110,7 @@ func (b *Backend) nextNode() *BackendNode {
 	if b.next >= len(b.nodes) {
 		b.next = 0
 	}
-	
+
 	return p
 }
 
