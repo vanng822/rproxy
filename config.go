@@ -23,10 +23,10 @@ type Conf struct {
 
 func DefaultConf() *Conf {
 	conf := &Conf{
-		Host:      "127.0.0.1",
+		Host:      "",
 		Port:      5555,
 		ApiEnable: true,
-		ApiHost:   "127.0.0.1",
+		ApiHost:   "",
 		ApiPort:   5556,
 		Servers:   nil,
 	}

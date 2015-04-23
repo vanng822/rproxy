@@ -23,3 +23,14 @@ func TestParseConfig(t *testing.T) {
 	assert.Equal("dev.com", conf.Servers[0].ServerName)
 	assert.Equal("127.0.0.1:8090", conf.Servers[0].TargetUrl)
 }
+
+func TestDefaultConf(t *testing.T) {
+	assert := assert.New(t)
+	conf := DefaultConf()
+	assert.Equal("", conf.Host)
+	assert.Equal(5555, conf.Port)
+	assert.Equal("", conf.ApiHost)
+	assert.Equal(5556, conf.ApiPort)
+	assert.True(conf.ApiEnable)
+	assert.Nil(conf.Servers)
+}
