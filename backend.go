@@ -100,7 +100,7 @@ func (b *Backend) getNode(targetUrl string) *BackendNode {
 
 // nextNode returns a node candidate for serving the request
 func (b *Backend) nextNode() *BackendNode {
-	// Pickup one backend proxy
+	// Pick up one backend proxy
 	if len(b.nodes) == 0 {
 		return nil
 	}
@@ -116,7 +116,6 @@ func (b *Backend) nextNode() *BackendNode {
 func (b *Backend) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	node := b.nextNode()
 	if node != nil {
-		// TODO next node if this node fails to serve
 		node.server.ServeHTTP(rw, req)
 	} else {
 		http.Error(rw, http.StatusText(http.StatusServiceUnavailable), http.StatusServiceUnavailable)
