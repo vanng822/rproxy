@@ -35,9 +35,7 @@ func (p *Proxy) AdminAPI() *r2router.Seefor {
 					http.StatusInternalServerError)
 				return
 			}
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("OK"))
-
+			renderer.JSON(w, http.StatusOK, r2router.M{"status": "OK"})
 		})
 		// delete backend node
 		r.Delete("/backend", func(w http.ResponseWriter, req *http.Request, _ r2router.Params) {
@@ -54,8 +52,7 @@ func (p *Proxy) AdminAPI() *r2router.Seefor {
 					http.StatusInternalServerError)
 				return
 			}
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("OK"))
+			renderer.JSON(w, http.StatusOK, r2router.M{"status": "OK"})
 
 		})
 		// delete server
@@ -74,8 +71,7 @@ func (p *Proxy) AdminAPI() *r2router.Seefor {
 					http.StatusInternalServerError)
 				return
 			}
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("OK"))
+			renderer.JSON(w, http.StatusOK, r2router.M{"status": "OK"})
 		})
 		// list all node for a servername
 		r.Get("/backend", func(w http.ResponseWriter, req *http.Request, _ r2router.Params) {
@@ -98,7 +94,7 @@ func (p *Proxy) AdminAPI() *r2router.Seefor {
 				nodes[i] = node.targetUrl
 			}
 			data[serverName] = nodes
-			renderer.JSON(w, http.StatusOK, data)
+			renderer.JSON(w, http.StatusOK, r2router.M{"status": "OK", "result": data})
 		})
 		// list all servernames
 		r.Get("/", func(w http.ResponseWriter, req *http.Request, _ r2router.Params) {
@@ -110,7 +106,7 @@ func (p *Proxy) AdminAPI() *r2router.Seefor {
 				}
 				data[serverName] = nodes
 			}
-			renderer.JSON(w, http.StatusOK, data)
+			renderer.JSON(w, http.StatusOK, r2router.M{"status": "OK", "result": data})
 		})
 	})
 
