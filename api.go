@@ -24,15 +24,23 @@ func (p *Proxy) AdminAPI() *r2router.Seefor {
 		r.Post("/backend", func(w http.ResponseWriter, req *http.Request, _ r2router.Params) {
 			err, severConfig := p.ParseServerConfig(req)
 			if err != nil {
-				http.Error(w, fmt.Sprintf("Invalid server config, error: %s", err.Error()), http.StatusBadRequest)
+				renderer.JSON(w,
+					http.StatusBadRequest,
+					r2router.M{
+						"status": "ERROR",
+						"msg":    fmt.Sprintf("Invalid server config, error: %s", err.Error()),
+					})
 				return
 			}
 			err = p.Register(severConfig.ServerName, severConfig.TargetUrl)
 			if err != nil {
-				http.Error(w,
-					fmt.Sprintf("It was problem when adding new server, serverName: '%s', targetUrl: '%s', error: '%s'",
-						severConfig.ServerName, severConfig.TargetUrl, err.Error()),
-					http.StatusInternalServerError)
+				renderer.JSON(w,
+					http.StatusInternalServerError,
+					r2router.M{
+						"status": "ERROR",
+						"msg": fmt.Sprintf("It was problem when adding new server, serverName: '%s', targetUrl: '%s', error: '%s'",
+							severConfig.ServerName, severConfig.TargetUrl, err.Error()),
+					})
 				return
 			}
 			renderer.JSON(w, http.StatusOK, r2router.M{"status": "OK"})
@@ -41,15 +49,23 @@ func (p *Proxy) AdminAPI() *r2router.Seefor {
 		r.Delete("/backend", func(w http.ResponseWriter, req *http.Request, _ r2router.Params) {
 			err, severConfig := p.ParseServerConfig(req)
 			if err != nil {
-				http.Error(w, fmt.Sprintf("Invalid server config, error: %s", err.Error()), http.StatusBadRequest)
+				renderer.JSON(w,
+					http.StatusBadRequest,
+					r2router.M{
+						"status": "ERROR",
+						"msg":    fmt.Sprintf("Invalid server config, error: %s", err.Error()),
+					})
 				return
 			}
 			err = p.Unregister(severConfig.ServerName, severConfig.TargetUrl)
 			if err != nil {
-				http.Error(w,
-					fmt.Sprintf("It was problem when removing server, serverName: '%s', targetUrl: '%s', error: '%s'",
-						severConfig.ServerName, severConfig.TargetUrl, err.Error()),
-					http.StatusInternalServerError)
+				renderer.JSON(w,
+					http.StatusInternalServerError,
+					r2router.M{
+						"status": "ERROR",
+						"msg": fmt.Sprintf("It was problem when removing server, serverName: '%s', targetUrl: '%s', error: '%s'",
+							severConfig.ServerName, severConfig.TargetUrl, err.Error()),
+					})
 				return
 			}
 			renderer.JSON(w, http.StatusOK, r2router.M{"status": "OK"})
@@ -60,15 +76,23 @@ func (p *Proxy) AdminAPI() *r2router.Seefor {
 			req.ParseForm()
 			serverName := req.Form.Get("serverName")
 			if serverName == "" {
-				http.Error(w, fmt.Sprintf("serverName is required"), http.StatusBadRequest)
+				renderer.JSON(w,
+					http.StatusBadRequest,
+					r2router.M{
+						"status": "ERROR",
+						"msg":    fmt.Sprintf("serverName is required"),
+					})
 				return
 			}
 			err := p.RemoveServer(serverName)
 			if err != nil {
-				http.Error(w,
-					fmt.Sprintf("It was problem when removing server, serverName: '%s', error: '%s'",
-						serverName, err.Error()),
-					http.StatusInternalServerError)
+				renderer.JSON(w,
+					http.StatusInternalServerError,
+					r2router.M{
+						"status": "ERROR",
+						"mgs": fmt.Sprintf("It was problem when removing server, serverName: '%s', error: '%s'",
+							serverName, err.Error()),
+					})
 				return
 			}
 			renderer.JSON(w, http.StatusOK, r2router.M{"status": "OK"})
@@ -78,14 +102,22 @@ func (p *Proxy) AdminAPI() *r2router.Seefor {
 			req.ParseForm()
 			serverName := req.Form.Get("serverName")
 			if serverName == "" {
-				http.Error(w, fmt.Sprintf("serverName is required"), http.StatusBadRequest)
+				renderer.JSON(w,
+					http.StatusBadRequest,
+					r2router.M{
+						"status": "ERROR",
+						"msg":    fmt.Sprintf("serverName is required"),
+					})
 				return
 			}
 			server, ok := p.servers[serverName]
 			if !ok {
-				http.Error(w,
-					fmt.Sprintf("Could not find server by name: %s", serverName),
-					http.StatusBadRequest)
+				renderer.JSON(w,
+					http.StatusBadRequest,
+					r2router.M{
+						"status": "ERROR",
+						"msg":    fmt.Sprintf("Could not find server by name: %s", serverName),
+					})
 				return
 			}
 			data := r2router.M{}
